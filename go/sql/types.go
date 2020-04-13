@@ -140,11 +140,11 @@ func (this *ColumnList) Names() []string {
 	return names
 }
 
-func (this *ColumnList) GetColumn(columnName string) *Column {
+func (this *ColumnList) GetColumn(columnName string) (column *Column) {
 	if ordinal, ok := this.Ordinals[columnName]; ok {
 		return &this.columns[ordinal]
 	}
-	return nil
+	return
 }
 
 func (this *ColumnList) SetUnsigned(columnName string) {
