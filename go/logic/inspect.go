@@ -126,32 +126,39 @@ func (this *Inspector) inspectOriginalAndGhostTables() (err error) {
 	if err != nil {
 		return err
 	}
-	sharedUniqueKeys, err := this.getSharedUniqueKeys(this.migrationContext.OriginalTableUniqueKeys, this.migrationContext.GhostTableUniqueKeys)
-	if err != nil {
-		return err
-	}
-	for i, sharedUniqueKey := range sharedUniqueKeys {
-		this.applyColumnTypes(this.migrationContext.DatabaseName, this.migrationContext.OriginalTableName, &sharedUniqueKey.Columns)
-		uniqueKeyIsValid := true
-		for _, column := range sharedUniqueKey.Columns.Columns() {
-			switch column.Type {
-			case sql.FloatColumnType:
-				{
-					log.Warning("Will not use %+v as shared key due to FLOAT data type", sharedUniqueKey.Name)
-					uniqueKeyIsValid = false
-				}
-			case sql.JSONColumnType:
-				{
-					// Noteworthy that at this time MySQL does not allow JSON indexing anyhow, but this code
-					// will remain in place to potentially handle the future case where JSON is supported in indexes.
-					log.Warning("Will not use %+v as shared key due to JSON data type", sharedUniqueKey.Name)
-					uniqueKeyIsValid = false
+
+	if this.migrationContext.SkipSharedUniqueKey {
+		this.migrationContext.UniqueKey = this.migrationContext.OriginalTableUniqueKeys[0]
+	} else {
+
+		sharedUniqueKeys, err := this.getSharedUniqueKeys(this.migrationContext.OriginalTableUniqueKeys, this.migrationContext.GhostTableUniqueKeys)
+		if err != nil {
+			return err
+		}
+
+		for i, sharedUniqueKey := range sharedUniqueKeys {
+			this.applyColumnTypes(this.migrationContext.DatabaseName, this.migrationContext.OriginalTableName, &sharedUniqueKey.Columns)
+			uniqueKeyIsValid := true
+			for _, column := range sharedUniqueKey.Columns.Columns() {
+				switch column.Type {
+				case sql.FloatColumnType:
+					{
+						log.Warning("Will not use %+v as shared key due to FLOAT data type", sharedUniqueKey.Name)
+						uniqueKeyIsValid = false
+					}
+				case sql.JSONColumnType:
+					{
+						// Noteworthy that at this time MySQL does not allow JSON indexing anyhow, but this code
+						// will remain in place to potentially handle the future case where JSON is supported in indexes.
+						log.Warning("Will not use %+v as shared key due to JSON data type", sharedUniqueKey.Name)
+						uniqueKeyIsValid = false
+					}
 				}
 			}
-		}
-		if uniqueKeyIsValid {
-			this.migrationContext.UniqueKey = sharedUniqueKeys[i]
-			break
+			if uniqueKeyIsValid {
+				this.migrationContext.UniqueKey = sharedUniqueKeys[i]
+				break
+			}
 		}
 	}
 	if this.migrationContext.UniqueKey == nil {
