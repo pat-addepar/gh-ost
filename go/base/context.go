@@ -79,6 +79,7 @@ type MigrationContext struct {
 	DatabaseName      string
 	OriginalTableName string
 	AlterStatement    string
+	SqlFile           string
 
 	CountTableRows           bool
 	ConcurrentCountTableRows bool

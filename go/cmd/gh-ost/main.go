@@ -8,6 +8,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/signal"
 	"syscall"
@@ -63,7 +64,8 @@ func main() {
 
 	flag.StringVar(&migrationContext.DatabaseName, "database", "", "database name (mandatory)")
 	flag.StringVar(&migrationContext.OriginalTableName, "table", "", "table name (mandatory)")
-	flag.StringVar(&migrationContext.AlterStatement, "alter", "", "alter statement (mandatory)")
+	flag.StringVar(&migrationContext.AlterStatement, "alter", "", "alter statement")
+	flag.StringVar(&migrationContext.SqlFile, "sql-file", "", "Path to sql file for alter statement")
 	flag.BoolVar(&migrationContext.CountTableRows, "exact-rowcount", false, "actually count table rows as opposed to estimate them (results in more accurate progress estimation)")
 	flag.BoolVar(&migrationContext.ConcurrentCountTableRows, "concurrent-rowcount", true, "(with --exact-rowcount), when true (default): count rows after row-copy begins, concurrently, and adjust row estimate later on; when false: first count rows, then start row copy")
 	flag.BoolVar(&migrationContext.AllowedRunningOnMaster, "allow-on-master", false, "allow this migration to run directly on master. Preferably it would run on a replica")
@@ -179,9 +181,25 @@ func main() {
 	if migrationContext.OriginalTableName == "" {
 		log.Fatalf("--table must be provided and table name must not be empty")
 	}
-	if migrationContext.AlterStatement == "" {
-		log.Fatalf("--alter must be provided and statement must not be empty")
+
+	if (migrationContext.AlterStatement != "" && migrationContext.SqlFile != "") ||
+		(migrationContext.AlterStatement == "" && migrationContext.SqlFile == "") {
+		log.Fatalf("must provide either --alter or --sql-file")
 	}
+
+	if migrationContext.SqlFile != "" {
+		// read alter statement from file
+		f, err := os.Open(migrationContext.SqlFile)
+		if err != nil {
+			log.Fatale(err)
+		}
+		byteVal, err := ioutil.ReadAll(f)
+		if err != nil {
+			log.Fatale(err)
+		}
+		migrationContext.AlterStatement = string(byteVal)
+	}
+
 	migrationContext.Noop = !(*executeFlag)
 	if migrationContext.AllowedRunningOnMaster && migrationContext.TestOnReplica {
 		log.Fatalf("--allow-on-master and --test-on-replica are mutually exclusive")
