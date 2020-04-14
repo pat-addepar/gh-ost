@@ -5,7 +5,7 @@ RUN apt-get update
 RUN apt-get install -y lsb-release
 RUN rm -rf /var/lib/apt/lists/*
 
-COPY . /go/src/github.com/github/gh-ost
-WORKDIR /go/src/github.com/github/gh-ost
+COPY . /go/src/github.com/pat-addepar/gh-ost
+WORKDIR /go/src/github.com/pat-addepar/gh-ost
 
-CMD ["script/test"]
+CMD CGO_ENABLED=0 go test ./go/...
