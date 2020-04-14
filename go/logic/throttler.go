@@ -1,6 +1,6 @@
 /*
    Copyright 2016 GitHub Inc.
-	 See https://github.com/github/gh-ost/blob/master/LICENSE
+	 See https://github.com/pat-addepar/gh-ost/blob/master/LICENSE
 */
 
 package logic
@@ -12,9 +12,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/github/gh-ost/go/base"
-	"github.com/github/gh-ost/go/mysql"
-	"github.com/github/gh-ost/go/sql"
+	"github.com/pat-addepar/gh-ost/go/base"
+	"github.com/pat-addepar/gh-ost/go/mysql"
+	"github.com/pat-addepar/gh-ost/go/sql"
 	"github.com/outbrain/golib/log"
 )
 
@@ -27,7 +27,7 @@ var (
 		500: "Internal server error",
 		-1:  "Connection error",
 	}
-	// See https://github.com/github/freno/blob/master/doc/http.md
+	// See https://github.com/pat-addepar/freno/blob/master/doc/http.md
 	httpStatusFrenoMessages = map[int]string{
 		200: "OK",
 		404: "freno: unknown metric",

@@ -1,6 +1,6 @@
 /*
    Copyright 2016 GitHub Inc.
-	 See https://github.com/github/gh-ost/blob/master/LICENSE
+	 See https://github.com/pat-addepar/gh-ost/blob/master/LICENSE
 */
 
 package logic
@@ -14,10 +14,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/github/gh-ost/go/base"
-	"github.com/github/gh-ost/go/binlog"
-	"github.com/github/gh-ost/go/mysql"
-	"github.com/github/gh-ost/go/sql"
+	"github.com/pat-addepar/gh-ost/go/base"
+	"github.com/pat-addepar/gh-ost/go/binlog"
+	"github.com/pat-addepar/gh-ost/go/mysql"
+	"github.com/pat-addepar/gh-ost/go/sql"
 
 	"github.com/outbrain/golib/log"
 )

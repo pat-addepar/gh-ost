@@ -1,6 +1,6 @@
 /*
    Copyright 2016 GitHub Inc.
-	 See https://github.com/github/gh-ost/blob/master/LICENSE
+	 See https://github.com/pat-addepar/gh-ost/blob/master/LICENSE
 */
 
 package binlog
@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/github/gh-ost/go/base"
-	"github.com/github/gh-ost/go/mysql"
-	"github.com/github/gh-ost/go/sql"
+	"github.com/pat-addepar/gh-ost/go/base"
+	"github.com/pat-addepar/gh-ost/go/mysql"
+	"github.com/pat-addepar/gh-ost/go/sql"
 
 	"github.com/outbrain/golib/log"
 	gomysql "github.com/siddontang/go-mysql/mysql"
