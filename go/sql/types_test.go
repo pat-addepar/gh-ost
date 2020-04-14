@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	log.SetLevel(log.ERROR)
+	log.SetLevel(log.DEBUG)
 }
 
 func TestParseColumnList(t *testing.T) {
@@ -39,6 +39,6 @@ func TestGetColumn(t *testing.T) {
 	}
 	{
 		column := columnList.GetColumn("no_such_column")
-		test.S(t).ExpectTrue(column == nil)
+		test.S(t).ExpectTrue(*column == Column{})
 	}
 }
