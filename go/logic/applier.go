@@ -953,12 +953,25 @@ func (this *Applier) buildDMLEventQuery(dmlEvent *binlog.BinlogDMLEvent) (result
 	switch dmlEvent.DML {
 	case binlog.DeleteDML:
 		{
-			query, uniqueKeyArgs, err := sql.BuildDMLDeleteQuery(dmlEvent.DatabaseName, this.migrationContext.GetGhostTableName(), this.migrationContext.OriginalTableColumns, &this.migrationContext.UniqueKey.Columns, dmlEvent.WhereColumnValues.AbstractValues())
+			query, uniqueKeyArgs, err := sql.BuildDMLDeleteQuery(
+				dmlEvent.DatabaseName,
+				this.migrationContext.GetGhostTableName(),
+				this.migrationContext.OriginalTableColumns,
+				&this.migrationContext.UniqueKey.Columns,
+				dmlEvent.WhereColumnValues.AbstractValues(),
+			)
 			return append(results, newDmlBuildResult(query, uniqueKeyArgs, -1, err))
 		}
 	case binlog.InsertDML:
 		{
-			query, sharedArgs, err := sql.BuildDMLInsertQuery(dmlEvent.DatabaseName, this.migrationContext.GetGhostTableName(), this.migrationContext.OriginalTableColumns, this.migrationContext.SharedColumns, this.migrationContext.MappedSharedColumns, dmlEvent.NewColumnValues.AbstractValues())
+			query, sharedArgs, err := sql.BuildDMLInsertQuery(
+				dmlEvent.DatabaseName,
+				this.migrationContext.GetGhostTableName(),
+				this.migrationContext.OriginalTableColumns,
+				this.migrationContext.SharedColumns,
+				this.migrationContext.MappedSharedColumns,
+				dmlEvent.NewColumnValues.AbstractValues(),
+			)
 			return append(results, newDmlBuildResult(query, sharedArgs, 1, err))
 		}
 	case binlog.UpdateDML:
@@ -970,7 +983,16 @@ func (this *Applier) buildDMLEventQuery(dmlEvent *binlog.BinlogDMLEvent) (result
 				results = append(results, this.buildDMLEventQuery(dmlEvent)...)
 				return results
 			}
-			query, sharedArgs, uniqueKeyArgs, err := sql.BuildDMLUpdateQuery(dmlEvent.DatabaseName, this.migrationContext.GetGhostTableName(), this.migrationContext.OriginalTableColumns, this.migrationContext.SharedColumns, this.migrationContext.MappedSharedColumns, &this.migrationContext.UniqueKey.Columns, dmlEvent.NewColumnValues.AbstractValues(), dmlEvent.WhereColumnValues.AbstractValues())
+			query, sharedArgs, uniqueKeyArgs, err := sql.BuildDMLUpdateQuery(
+				dmlEvent.DatabaseName,
+				this.migrationContext.GetGhostTableName(),
+				this.migrationContext.OriginalTableColumns,
+				this.migrationContext.SharedColumns,
+				this.migrationContext.MappedSharedColumns,
+				&this.migrationContext.UniqueKey.Columns,
+				dmlEvent.NewColumnValues.AbstractValues(),
+				dmlEvent.WhereColumnValues.AbstractValues(),
+			)
 			args := sqlutils.Args()
 			args = append(args, sharedArgs...)
 			args = append(args, uniqueKeyArgs...)
@@ -984,6 +1006,10 @@ func (this *Applier) buildDMLEventQuery(dmlEvent *binlog.BinlogDMLEvent) (result
 func (this *Applier) ApplyDMLEventQueries(dmlEvents [](*binlog.BinlogDMLEvent)) error {
 
 	var totalDelta int64
+
+	// For logging purposes
+	dmlCounter := make(map[binlog.EventDML]int64, 4)
+	startTime := time.Now()
 
 	err := func() error {
 		tx, err := this.db.Begin()
@@ -1017,6 +1043,7 @@ func (this *Applier) ApplyDMLEventQueries(dmlEvents [](*binlog.BinlogDMLEvent)) 
 					return rollback(err)
 				}
 				totalDelta += buildResult.rowsDelta
+				dmlCounter[dmlEvent.DML]++
 			}
 		}
 		if err := tx.Commit(); err != nil {
@@ -1033,7 +1060,20 @@ func (this *Applier) ApplyDMLEventQueries(dmlEvents [](*binlog.BinlogDMLEvent)) 
 	if this.migrationContext.CountTableRows {
 		atomic.AddInt64(&this.migrationContext.RowsDeltaEstimate, totalDelta)
 	}
-	log.Debugf("ApplyDMLEventQueries() applied %d events in one transaction", len(dmlEvents))
+
+	elapsed := time.Since(startTime)
+
+	logStr := "ApplyDMLEventQueries() applied [%d] events in one transaction, " +
+		"INSERT: [%d], DELETE: [%d], UPDATE: [%d], NotDML: [%d], Time: [%s]"
+	log.Debugf(
+		logStr,
+		len(dmlEvents),
+		dmlCounter[binlog.InsertDML],
+		dmlCounter[binlog.DeleteDML],
+		dmlCounter[binlog.UpdateDML],
+		dmlCounter[binlog.NotDML],
+		elapsed,
+	)
 	return nil
 }
 
