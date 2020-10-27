@@ -19,4 +19,7 @@ test:
 build:
 	go build -i -o ${BIN_DIR}/gh-ost go/cmd/gh-ost/*.go
 
+build-linux:
+	GOOS=linux GOARCH=amd64 go build -i -o ${BIN_DIR}/gh-ost go/cmd/gh-ost/*.go
+
 .PHONY: test clean all build
