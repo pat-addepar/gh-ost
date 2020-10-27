@@ -4,13 +4,13 @@ cd ~
 wget https://golang.org/dl/go1.14.10.linux-amd64.tar.gz -O go1.14.10.src.tar.gz
 tar xvf go1.14.10.src.tar.gz
 
-sudo chown -R root:root ./go
-sudo mv go /usr/local
+#sudo chown -R root:root ./go
+#sudo mv go /usr/local
 
 # Update paths
-echo "export GOROOT=/usr/local/go" >> $HOME/.profile
-echo "export GOPATH=\$HOME/work" >> $HOME/.profile
-echo "export PATH=\$PATH:\$GOROOT/bin:\$GOPATH/bin" >> $HOME/.profile
+# echo "export GOROOT=\$HOME/go"
+echo "export GOPATH=\$HOME/go" >> $HOME/.profile
+echo "export PATH=\$PATH:\$GOPATH/bin" >> $HOME/.profile
 . ~/.profile
 
 mkdir $HOME/work
