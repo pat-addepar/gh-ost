@@ -11,7 +11,7 @@ sudo mv go /usr/local
 echo "export GOROOT=/usr/local/go" >> $HOME/.profile
 echo "export GOPATH=$HOME/work" >> $HOME/.profile
 echo "export PATH=$PATH:$GOROOT/bin:$GOPATH/bin" >> $HOME/.profile
-source ~/.profile
+. ~/.profile
 
 mkdir $HOME/work
 
