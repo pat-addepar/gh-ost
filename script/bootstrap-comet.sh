@@ -13,6 +13,8 @@ echo "export GOPATH=\$HOME/go" >> $HOME/.profile
 echo "export PATH=\$PATH:\$GOPATH/bin" >> $HOME/.profile
 . ~/.profile
 
+mkdir $HOME/work
+
 # Install go dep
 go get -d -u github.com/golang/dep
 cd $(go env GOPATH)/src/github.com/golang/dep
@@ -21,8 +23,8 @@ git checkout $DEP_LATEST
 GOBIN=$GOPATH/bin bash ./install.sh
 cd ~/
 
-mkdir -p $HOME/go/src/github.com/pat-addepar/
-cd $HOME/go/src/github.com/pat-addepar/
+mkdir -p work/src/github.com/pat-addepar/
+cd work/src/github.com/pat-addepar/
 git clone https://github.com/pat-addepar/gh-ost && cd gh-ost
 
 # Install Deps
