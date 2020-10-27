@@ -9,8 +9,8 @@ sudo mv go /usr/local
 
 # Update paths
 echo "export GOROOT=/usr/local/go" >> $HOME/.profile
-echo "export GOPATH=$HOME/work" >> $HOME/.profile
-echo "export PATH=$PATH:$GOROOT/bin:$GOPATH/bin" >> $HOME/.profile
+echo "export GOPATH=\$HOME/work" >> $HOME/.profile
+echo "export PATH=\$PATH:\$GOROOT/bin:\$GOPATH/bin" >> $HOME/.profile
 . ~/.profile
 
 mkdir $HOME/work
