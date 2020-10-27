@@ -20,7 +20,7 @@ go get -d -u github.com/golang/dep
 cd $(go env GOPATH)/src/github.com/golang/dep
 DEP_LATEST=$(git describe --abbrev=0 --tags)
 git checkout $DEP_LATEST
-./install.sh
+GOBIN=$GOPATH/bin bash ./install.sh
 cd ~/
 
 mkdir -p work/src/github.com/pat-addepar/
