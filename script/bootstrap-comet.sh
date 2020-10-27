@@ -34,4 +34,5 @@ dep ensure
 make build
 
 # Clean
+cd ~
 rm go1.14.10.src.tar.gz
