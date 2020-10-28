@@ -1063,7 +1063,7 @@ func (this *Applier) ApplyDMLEventQueries(dmlEvents [](*binlog.BinlogDMLEvent)) 
 				if logDMLEvents {
 					logStr := fmt.Sprintf("QUERY: [%s] ARGS: [%+v]\n", buildResult.query, buildResult.args)
 					if _, err = logFile.WriteString(logStr); err != nil {
-						return err
+						log.Debugf("Failed to write dml snapshot to file with err: [%s]", err.Error())
 					}
 				}
 
@@ -1076,9 +1076,14 @@ func (this *Applier) ApplyDMLEventQueries(dmlEvents [](*binlog.BinlogDMLEvent)) 
 		}
 
 		// Move dml-snapshot-flag file
-		newFilename := fmt.Sprintf("%s_%v", this.migrationContext.DMLSnapshotFlagFile, time.Now().Unix())
-		err = os.Rename(this.migrationContext.DMLSnapshotFlagFile, newFilename)
-		return err
+		if logDMLEvents {
+			newFilename := fmt.Sprintf("%s_%v", this.migrationContext.DMLSnapshotFlagFile, time.Now().Unix())
+			err = os.Rename(this.migrationContext.DMLSnapshotFlagFile, newFilename)
+			if err != nil {
+				log.Debugf("Failed to rename dml snapshot file with err: [%s]", err.Error())
+			}
+		}
+		return nil
 	}()
 
 	if err != nil {
