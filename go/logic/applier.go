@@ -1037,12 +1037,15 @@ func (this *Applier) ApplyDMLEventQueries(dmlEvents [](*binlog.BinlogDMLEvent)) 
 
 		// If dml-snapshot-flag-file is specified, log dml events
 		var logFile *os.File
-		if this.migrationContext.DMLSnapshotFlagFile != "" {
-			if base.FileExists(this.migrationContext.DMLSnapshotFlagFile) {
-				logFile, err = os.Open(this.migrationContext.DMLSnapshotFlagFile)
-				if err != nil {
-					return err
-				}
+		logDMLEvents := false
+		if this.migrationContext.DMLSnapshotFlagFile != "" &&
+			base.FileExists(this.migrationContext.DMLSnapshotFlagFile) {
+			logFile, err = os.OpenFile(this.migrationContext.DMLSnapshotFlagFile, os.O_APPEND|os.O_WRONLY, 0644)
+			if err != nil {
+				log.Debugf("Failed to open dml snapshot file with err: [%s]", err.Error())
+			} else {
+				defer logFile.Close()
+				logDMLEvents = true
 			}
 		}
 
@@ -1057,8 +1060,12 @@ func (this *Applier) ApplyDMLEventQueries(dmlEvents [](*binlog.BinlogDMLEvent)) 
 				}
 
 				// Log DML Events to file
-				logStr := fmt.Sprintf("%s %+v\n", buildResult.query, buildResult.args)
-				logFile.Write([]byte(logStr))
+				if logDMLEvents {
+					logStr := fmt.Sprintf("QUERY: [%s] ARGS: [%+v]\n", buildResult.query, buildResult.args)
+					if _, err = logFile.WriteString(logStr); err != nil {
+						return err
+					}
+				}
 
 				totalDelta += buildResult.rowsDelta
 				dmlCounter[dmlEvent.DML]++
