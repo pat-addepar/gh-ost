@@ -13,10 +13,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/pat-addepar/gh-ost/go/base"
-	"github.com/pat-addepar/gh-ost/go/logic"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/outbrain/golib/log"
+	"github.com/pat-addepar/gh-ost/go/base"
+	"github.com/pat-addepar/gh-ost/go/logic"
 
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -114,7 +114,19 @@ func main() {
 	flag.StringVar(&migrationContext.ThrottleFlagFile, "throttle-flag-file", "", "operation pauses when this file exists; hint: use a file that is specific to the table being altered")
 	flag.StringVar(&migrationContext.ThrottleAdditionalFlagFile, "throttle-additional-flag-file", "/tmp/gh-ost.throttle", "operation pauses when this file exists; hint: keep default, use for throttling multiple gh-ost operations")
 	flag.StringVar(&migrationContext.PostponeCutOverFlagFile, "postpone-cut-over-flag-file", "", "while this file exists, migration will postpone the final stage of swapping tables, and will keep on syncing the ghost table. Cut-over/swapping would be ready to perform the moment the file is deleted.")
-	flag.StringVar(&migrationContext.PanicFlagFile, "panic-flag-file", "", "when this file is created, gh-ost will immediately terminate, without cleanup")
+	flag.StringVar(
+		&migrationContext.PanicFlagFile,
+		"panic-flag-file",
+		"",
+		"when this file is created, gh-ost will immediately terminate, without cleanup",
+	)
+
+	flag.StringVar(
+		&migrationContext.DMLSnapshotFlagFile,
+		"dml-snapshot-flag-file",
+		"",
+		"when this file is creatd, gh-ost will take a snapshot of the DML and log it to the specified file",
+	)
 
 	flag.BoolVar(&migrationContext.DropServeSocket, "initially-drop-socket-file", false, "Should gh-ost forcibly delete an existing socket file. Be careful: this might drop the socket file of a running migration!")
 	flag.StringVar(&migrationContext.ServeSocketFile, "serve-socket-file", "", "Unix socket file to serve on. Default: auto-determined and advertised upon startup")
