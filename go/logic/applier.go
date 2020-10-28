@@ -8,6 +8,7 @@ package logic
 import (
 	gosql "database/sql"
 	"fmt"
+	"os"
 	"sync/atomic"
 	"time"
 
@@ -1033,6 +1034,21 @@ func (this *Applier) ApplyDMLEventQueries(dmlEvents [](*binlog.BinlogDMLEvent)) 
 		if _, err := tx.Exec(sessionQuery); err != nil {
 			return rollback(err)
 		}
+
+		// If dml-snapshot-flag-file is specified, log dml events
+		var logFile *os.File
+		logDMLEvents := false
+		if this.migrationContext.DMLSnapshotFlagFile != "" &&
+			base.FileExists(this.migrationContext.DMLSnapshotFlagFile) {
+			logFile, err = os.OpenFile(this.migrationContext.DMLSnapshotFlagFile, os.O_APPEND|os.O_WRONLY, 0644)
+			if err != nil {
+				log.Debugf("Failed to open dml snapshot file with err: [%s]", err.Error())
+			} else {
+				defer logFile.Close()
+				logDMLEvents = true
+			}
+		}
+
 		for _, dmlEvent := range dmlEvents {
 			for _, buildResult := range this.buildDMLEventQuery(dmlEvent) {
 				if buildResult.err != nil {
@@ -1042,12 +1058,30 @@ func (this *Applier) ApplyDMLEventQueries(dmlEvents [](*binlog.BinlogDMLEvent)) 
 					err = fmt.Errorf("%s; query=%s; args=%+v", err.Error(), buildResult.query, buildResult.args)
 					return rollback(err)
 				}
+
+				// Log DML Events to file
+				if logDMLEvents {
+					logStr := fmt.Sprintf("QUERY: [%s] ARGS: [%+v]\n", buildResult.query, buildResult.args)
+					if _, err = logFile.WriteString(logStr); err != nil {
+						log.Debugf("Failed to write dml snapshot to file with err: [%s]", err.Error())
+					}
+				}
+
 				totalDelta += buildResult.rowsDelta
 				dmlCounter[dmlEvent.DML]++
 			}
 		}
 		if err := tx.Commit(); err != nil {
 			return err
+		}
+
+		// Move dml-snapshot-flag file
+		if logDMLEvents {
+			newFilename := fmt.Sprintf("%s_%v", this.migrationContext.DMLSnapshotFlagFile, time.Now().Unix())
+			err = os.Rename(this.migrationContext.DMLSnapshotFlagFile, newFilename)
+			if err != nil {
+				log.Debugf("Failed to rename dml snapshot file with err: [%s]", err.Error())
+			}
 		}
 		return nil
 	}()

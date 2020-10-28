@@ -15,7 +15,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/pat-addepar/gh-ost/go/mysql"
 	"github.com/pat-addepar/gh-ost/go/sql"
@@ -134,6 +134,7 @@ type MigrationContext struct {
 	ForceNamedCutOverCommand            bool
 	ForceNamedPanicCommand              bool
 	PanicFlagFile                       string
+	DMLSnapshotFlagFile                 string
 	HooksPath                           string
 	HooksHintMessage                    string
 	HooksHintOwner                      string
